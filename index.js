@@ -95,7 +95,7 @@ async function main(message) {
             let dados;
         
             try {
-                if (process.env.SIGLA_DB === 'mongodb') {
+                if (process.env.DATABASE === 'mongodb') {
                     // Conectar ao MongoDB e acessar a coleção com o nome fornecido
                     const collection = mongoose.connection.db.collection(nomeTabela);
         
@@ -153,7 +153,7 @@ async function main(message) {
         console.log(`Exportação concluída e salva em ${filePath}`);
         
   
-        if (process.env.SIGLA_DB === 'mongodb') {
+        if (process.env.DATABASE === 'mongodb') {
                 // Cria um novo registro no MongoDB
                 await ExportacaoRepository.alterarExportacao(exportacaoHash, filePath);
         } else {

@@ -8,7 +8,7 @@ dotenv.config();
 let dbInstance;
 
 const initDatabase = async () => {
-    if (process.env.SIGLA_DB === 'mongodb') {
+    if (process.env.DATABASE === 'mongodb') {
         // Conectar com MongoDB usando Mongoose
         try {
             const mongoURI = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@${process.env.DB_HOSTNAME}/${process.env.DB_NAME}?retryWrites=true&w=majority`;
@@ -30,7 +30,7 @@ const initDatabase = async () => {
             dbInstance = new Sequelize(process.env.DB_NAME, process.env.DB_USERNAME, process.env.DB_PASSWORD, {
                 host: process.env.DB_HOSTNAME,
                 port: process.env.DB_PORT,
-                dialect: process.env.SIGLA_DB,
+                dialect: process.env.DATABASE,
                 logging: false,  // Desabilita logs do Sequelize
             });
 

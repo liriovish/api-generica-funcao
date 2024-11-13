@@ -18,11 +18,11 @@
 const Exportacoes = require('../models/exportacoes');
 
 /**
- * Classe WhatsappRepository
+ * Classe ExportRepository
  * 
  * @package  src\infra\repositories
  */
-module.exports = class WhatsappRepository {
+module.exports = class ExportRepository {
 
     /**
      * Função para inserir o arquivo no banco de dados
