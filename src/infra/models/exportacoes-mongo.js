@@ -4,12 +4,12 @@
  * NodeJS version 16.x
  *
  * @category  JavaScript
- * @package   WhatsApp
+ * @package   Api Genérica
  * @author    Equipe Webcart�rios <contato@webcartorios.com.br>
  * @copyright 2022 (c) DYNAMIC SYSTEM e Vish! Internet e Sistemas Ltda. - ME
  * @license   https://github.com/dynamic-system-vish/api-whatsapp/licence.txt BSD Licence
  * @link      https://github.com/dynamic-system-vish/api-whatsapp
- * @CriadoEm  15/03/2023
+ * @CriadoEm  14/11/2024
  */
 
 /**

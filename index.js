@@ -1,13 +1,8 @@
 const amqp = require('amqplib');
-// import dotenv from 'dotenv';
 const path = require('path')
 const fs = require('fs')
 require("dotenv").config();
 const database = require('./src/config/database.js'); 
-const mongoose = require('mongoose');
-const sequelize = require('sequelize')
-const { MongoExportacao, defineExportacaoSQL } = require('./src/infra/models/Model.js');
-const { hash } = require('crypto');
 const ExportacaoRepository = require('./src/infra/repositories/exportacao-repository.js')
 
 async function run() {
@@ -80,90 +75,56 @@ run();
 
 async function main(message) {	
     try {
-        console.log('Processando exportaÁ„o:', message);
+            console.log('Processando exporta√ß√£o:', message);
 
-        const exportacaoHash = message.hash;
-        const nomeTabela = message.nomeTabela;
-        const filtros = message.filtros;
-
-
-    
-            // Pegando os par‚metros da query
-            const {campo, tipoFiltro, valor} = filtros;
-            await database.initDatabase();
-            const db = database.getDatabase();
-            let dados;
+            const sExportacaoHash = message.hash;
+            const sNomeTabela = message.nomeTabela;
+            const aFiltros = message.filtros;
         
+
+            /**
+             * Instancia banco de dados
+             */
+            await database.initDatabase();            
+            let oDados;
+
+            
             try {
-                if (process.env.DATABASE === 'mongodb') {
-                    // Conectar ao MongoDB e acessar a coleÁ„o com o nome fornecido
-                    const collection = mongoose.connection.db.collection(nomeTabela);
-        
-                    if (!collection) {
-                        return { error: 'Tabela n„o encontrada no banco de dados.' };
-                    }
-        
-                    let query = {};
-        
-                    // Aplica filtros, se fornecidos
-                    if (campo && tipoFiltro && valor) {
-                        campo.forEach((field, index) => {
-                            query[field] = { [`$${tipoFiltro[index]}`]: valor[index] };  // Cria o filtro din‚mico
-                        });
-                    }
-        
-                    // Realiza a consulta no MongoDB com paginaÁ„o
-                    dados = await collection.find(query).toArray();
-        
-        
-                } else {
-                    // Conex„o com MySQL usando Sequelize
-        
-        
-                    const sequelize = await db.authenticate();
-                    const model = sequelize.models[nomeTabela];  // Acessa o modelo da tabela no Sequelize
-        
-                    if (!model) {
-                        return { error: 'Tabela n„o encontrada no banco de dados.' };
-                    }
-        
-                    // Busca os dados da tabela sem filtros
-                    dados = await model.findAll();
-                }
-        
-               
-        
+                /**
+                 * Busca dados
+                 * @var {object} oDados
+                 */
+                oDados = await ExportacaoRepository.buscarDados(sNomeTabela, aFiltros);
             } catch (error) {
                 console.error('Erro ao listar dados:', error);
-                res.status(500).json({ error: 'Erro ao listar dados' });
+                return;
             }
         
 
+            /**
+             * Salva dados da exporta√ß√£o no diret√≥rio
+             * @var {object} oDadosExportados
+             * @var {string} sDiretorio
+             * @var {string} sCaminhoArquivo
+             */
+            const oDadosExportados = JSON.stringify(oDados);
+            
+            const sDiretorio = process.env.DIRETORIO_ARQUIVOS || './exportacoes';
+            const sCaminhoArquivo = path.join(sDiretorio, `${sExportacaoHash}.txt`);
 
-        const dadosExportados = JSON.stringify(dados);
-        
-        const diretorio = process.env.DIRETORIO_ARQUIVOS || './exportacoes';
-        const filePath = path.join(diretorio, `${exportacaoHash}.txt`);
-
-        if (!fs.existsSync(diretorio)) {
-            fs.mkdirSync(diretorio, { recursive: true });
-        }
-        fs.writeFileSync(filePath, dadosExportados);
-        console.log(diretorio, filePath);
-        console.log(`ExportaÁ„o concluÌda e salva em ${filePath}`);
-        
-  
-        if (process.env.DATABASE === 'mongodb') {
-                // Cria um novo registro no MongoDB
-                await ExportacaoRepository.alterarExportacao(exportacaoHash, filePath);
-        } else {
-                // Se usa MySQL, cria o registro usando Sequelize
-                const sequelize = getDatabase();
-                const ExportacaoSQL = defineExportacaoSQL(sequelize);
-                exportacao = await ExportacaoSQL.update(novaExportacao);
-        }
+            if (!fs.existsSync(sDiretorio)) {
+                fs.mkdirSync(sDiretorio, { recursive: true });
+            }
+            fs.writeFileSync(sCaminhoArquivo, oDadosExportados);
+            console.log(sDiretorio, sCaminhoArquivo);
+            console.log(`Exporta√ß√£o conclu√≠da e salva em ${sCaminhoArquivo}`);
+            
+    
+          
+            await ExportacaoRepository.alterarExportacao(sExportacaoHash, sCaminhoArquivo);
+          
 
 
     } catch (error) {
-        console.error('Erro ao processar exportaÁ„o:', error);
+        console.error('Erro ao processar exporta√ß√£o:', error);
 }}
